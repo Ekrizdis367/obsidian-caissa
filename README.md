@@ -529,7 +529,7 @@ npm run build    # type-check and produce a production main.js
 npm run lint     # eslint over src/
 ```
 
-To test locally, this folder lives at `<Vault>/.obsidian/plugins/obsidian-caissa/`. After building, reload Obsidian and enable **Caissa** under **Settings → Community plugins**.
+To test locally, this folder lives at `<Vault>/.obsidian/plugins/caissa/`. After building, reload Obsidian and enable **Caissa** under **Settings → Community plugins**.
 
 ## Credits
 
