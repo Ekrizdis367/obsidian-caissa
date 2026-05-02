@@ -17,6 +17,7 @@ const CONFIG_KEYS = new Set([
 	"endgame",
 	"wccgame",
 	"wcc",
+	"freeboard",
 	"moves",
 	"pgn",
 	"lichess",
@@ -156,6 +157,12 @@ function assignKey(cfg: ChessBlockConfig, key: string, value: string): void {
 		case "wcc":
 			cfg.wccgame = value;
 			return;
+		case "freeboard": {
+			const b = parseBool(value);
+			if (b === true) cfg.freeboard = true;
+			else if (b === false) cfg.freeboard = false;
+			return;
+		}
 		case "moves":
 			cfg.moves = value;
 			return;

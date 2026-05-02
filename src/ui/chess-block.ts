@@ -1,6 +1,20 @@
-import { App, MarkdownPostProcessorContext, Menu, Notice, setIcon } from "obsidian";
+import {
+	App,
+	MarkdownPostProcessorContext,
+	MarkdownRenderer,
+	MarkdownRenderChild,
+	Menu,
+	Notice,
+	setIcon,
+} from "obsidian";
 import type { ChessBlockConfig, CaissaSettings, PgnHeaders } from "../types";
-import { buildPositions, type BuildResult, type PositionStep } from "../chess/engine";
+import {
+	buildPositions,
+	pickOpeningDescription,
+	type BuildResult,
+	type PositionStep,
+} from "../chess/engine";
+import { findOpening } from "../chess/openings";
 import { fetchExplorer } from "../chess/explorer";
 import { fetchLichessGame } from "../chess/lichess-games";
 import { renderBoard } from "./board-renderer";
@@ -26,6 +40,104 @@ import {
 } from "./analysis-panel";
 import { createEvalGraphController } from "./eval-graph";
 import { renderPlayBlock } from "./play-controller";
+import { renderFreeBoardBlock } from "./free-board-controller";
+
+/**
+ * For built-in opening blocks (no PGN / Lichess / headers), always read the
+ * blurb from the bundled library at render time so preview never shows stale
+ * or theme-clamped fragments from an older pipeline.
+ */
+function studyDescriptionForDisplay(
+	config: ChessBlockConfig,
+	result: BuildResult
+): string | undefined {
+	if (result.headers) return result.resolvedDescription?.trim();
+	if (config.pgn?.trim() || config.lichess?.trim()) {
+		return result.resolvedDescription?.trim();
+	}
+	if (config.wccgame?.trim() || config.endgame?.trim()) {
+		return result.resolvedDescription?.trim();
+	}
+	const openingName = config.opening?.trim();
+	if (openingName) {
+		const hit = findOpening(config.opening, config.variation);
+		if (hit) {
+			const lib = pickOpeningDescription(hit);
+			if (lib) return lib;
+		}
+	}
+	return result.resolvedDescription?.trim();
+}
+
+function createOpeningGuideLink(parent: HTMLElement, guideUrl: string): void {
+	const url = guideUrl.trim();
+	if (!url) return;
+	const a = parent.createEl("a", {
+		cls: "chess-study-opening-guide-link",
+		href: url,
+		attr: {
+			target: "_blank",
+			rel: "noopener noreferrer",
+			"aria-label": "Open opening explorer on lichess.org",
+			title: "Open lichess.org opening explorer",
+		},
+	});
+	setIcon(a, "link");
+}
+
+/**
+ * Heading line: title text with optional trailing explorer link (opening library).
+ */
+function mountStudyTitle(
+	host: HTMLElement,
+	title: string,
+	guideUrl: string | undefined
+): void {
+	const trimmedUrl = guideUrl?.trim();
+	if (trimmedUrl) {
+		const row = host.createDiv({ cls: "chess-study-title-row" });
+		row.createDiv({ cls: "chess-study-title", text: title });
+		createOpeningGuideLink(row, trimmedUrl);
+	} else {
+		host.createDiv({ cls: "chess-study-title", text: title });
+	}
+}
+
+/**
+ * Renders the optional study blurb under the title via Obsidian's markdown
+ * pipeline (paragraphs, links) plus an icon-only external guide link when it
+ * was not placed inline on the title row.
+ */
+function appendStudyDescriptionBlock(
+	app: App,
+	ctx: MarkdownPostProcessorContext,
+	host: HTMLElement,
+	description: string | undefined,
+	guideUrl: string | undefined
+): void {
+	const trimmed = description?.trim();
+	const guideTrimmed = guideUrl?.trim();
+	if (!trimmed && !guideTrimmed) return;
+	const wrap = host.createDiv({ cls: "chess-study-description" });
+	const appendGuideIfNeeded = (): void => {
+		if (guideTrimmed) createOpeningGuideLink(wrap, guideTrimmed);
+	};
+	if (trimmed) {
+		const child = new MarkdownRenderChild(wrap);
+		ctx.addChild(child);
+		void MarkdownRenderer.render(
+			app,
+			trimmed,
+			wrap,
+			ctx.sourcePath,
+			child
+		).then(() => {
+			appendGuideIfNeeded();
+		});
+	} else {
+		appendGuideIfNeeded();
+	}
+}
 
 export interface ChessBlockViewArgs {
 	host: HTMLElement;
@@ -53,14 +165,36 @@ export function renderChessBlock(args: ChessBlockViewArgs): void {
 	}
 
 	const result = buildPositions({
-		opening: config.opening,
-		variation: config.variation,
-		endgame: config.endgame,
-		wccgame: config.wccgame,
+		opening: config.freeboard ? undefined : config.opening,
+		variation: config.freeboard ? undefined : config.variation,
+		endgame: config.freeboard ? undefined : config.endgame,
+		wccgame: config.freeboard ? undefined : config.wccgame,
 		moves: config.moves,
-		pgn: config.pgn,
+		pgn: config.freeboard ? undefined : config.pgn,
 		fen: config.fen,
 	});
+
+	if (config.freeboard && !config.play) {
+		if (result.error) {
+			host.createDiv({
+				cls: "chess-study-error",
+				text: result.error,
+			});
+			return;
+		}
+		const start = result.steps[0];
+		if (start) {
+			renderFreeBoardBlock({
+				host,
+				config,
+				settings,
+				app,
+				ctx,
+				startFen: start.fen,
+			});
+			return;
+		}
+	}
 
 	// Play-vs-Stockfish hijacks the entire block: the user is making
 	// moves, not stepping a fixed sequence, so the standard mountResult
@@ -111,10 +245,6 @@ function renderRemoteLichessBlock(
 ): void {
 	const id = config.lichess?.trim() ?? "";
 
-	if (config.title) {
-		host.createDiv({ cls: "chess-study-title", text: config.title });
-	}
-
 	const loading = host.createDiv({
 		cls: "chess-study-loading",
 		text: `Loading Lichess game…`,
@@ -152,26 +282,53 @@ function mountResult(
 	// a starting position without editing the source manually. The picker
 	// rewrites the block's source on change, which triggers a re-render.
 	const showInlinePicker =
-		!config.pgn && !config.moves && !config.fen && !config.lichess;
+		!config.pgn &&
+		!config.moves &&
+		!config.fen &&
+		!config.lichess &&
+		!config.freeboard;
 	if (showInlinePicker) {
 		renderPickerStrip(host, config, app, ctx);
 	}
 
+	const putGuideInTitle =
+		Boolean(result.resolvedGuideUrl?.trim()) &&
+		!result.headers &&
+		(Boolean(config.title) || Boolean(result.resolvedTitle));
+
 	if (config.title) {
-		host.createDiv({ cls: "chess-study-title", text: config.title });
+		mountStudyTitle(
+			host,
+			config.title,
+			putGuideInTitle ? result.resolvedGuideUrl : undefined
+		);
 	} else if (result.headers) {
 		renderGameHeader(host, result.headers);
 	} else if (result.resolvedTitle) {
-		host.createDiv({
-			cls: "chess-study-title",
-			text: result.resolvedTitle,
-		});
-		if (result.resolvedDescription) {
-			host.createDiv({
-				cls: "chess-study-description",
-				text: result.resolvedDescription,
-			});
-		}
+		mountStudyTitle(
+			host,
+			result.resolvedTitle,
+			putGuideInTitle ? result.resolvedGuideUrl : undefined
+		);
+	}
+
+	// Opening/endgame blurbs; explorer link only here when there is no title row
+	// to attach it to. Skip when PGN headers are shown.
+	const displayDescription = studyDescriptionForDisplay(config, result);
+	const guideForDescription = putGuideInTitle
+		? undefined
+		: result.resolvedGuideUrl;
+	const hasStudyNotes =
+		Boolean(displayDescription?.trim()) ||
+		Boolean(guideForDescription?.trim());
+	if (hasStudyNotes && !result.headers) {
+		appendStudyDescriptionBlock(
+			app,
+			ctx,
+			host,
+			displayDescription,
+			guideForDescription
+		);
 	}
 
 	const size = config.size ?? "medium";
@@ -189,7 +346,14 @@ function mountResult(
 				"Chess study board. Arrow keys step through moves, F flips the board.",
 		},
 	});
-	const boardCol = layout.createDiv({ cls: "chess-study-board-col" });
+	// Trays sit in the board column only (above/below the square board) so
+	// captures stay visually tied to the board; the move list pairs in a row
+	// with that column so its height still tracks the full board column.
+	const boardStack = layout.createDiv({ cls: "chess-study-board-stack" });
+	const boardMovesRow = boardStack.createDiv({
+		cls: "chess-study-board-moves-row",
+	});
+	const boardCol = boardMovesRow.createDiv({ cls: "chess-study-board-col" });
 	const topTrayHost = boardCol.createDiv({
 		cls: "chess-study-captured-wrap chess-study-captured-top",
 	});
@@ -197,20 +361,20 @@ function mountResult(
 	const bottomTrayHost = boardCol.createDiv({
 		cls: "chess-study-captured-wrap chess-study-captured-bottom",
 	});
-	const controlsHost = boardCol.createDiv({ cls: "chess-study-controls" });
-
 	const sideCol = showMoves
-		? layout.createDiv({ cls: "chess-study-side-col" })
+		? boardMovesRow.createDiv({ cls: "chess-study-side-col" })
 		: null;
 	const movesHost =
 		sideCol?.createDiv({ cls: "chess-study-moves-wrap" }) ?? null;
 
 	const analyzeEnabled = config.analyze === true;
 	const analysisHost = analyzeEnabled
-		? (sideCol ?? boardCol).createDiv({
+		? (sideCol ?? layout).createDiv({
 				cls: "chess-study-analysis-wrap",
 		  })
 		: null;
+
+	const controlsHost = boardCol.createDiv({ cls: "chess-study-controls" });
 	const evalGraphHost = analyzeEnabled
 		? host.createDiv({ cls: "chess-study-eval-graph-wrap" })
 		: null;
@@ -291,16 +455,6 @@ function mountResult(
 			return;
 		}
 		const totals = computeCaptured(result.steps, state.index);
-		// If the position has no captures (e.g. a fresh starting board or
-		// a custom-FEN endgame study), hide the trays entirely so they
-		// don't add empty vertical space.
-		if (!hasAnyCaptures(totals)) {
-			topTrayHost.empty();
-			bottomTrayHost.empty();
-			topTrayHost.classList.add("is-hidden");
-			bottomTrayHost.classList.add("is-hidden");
-			return;
-		}
 		topTrayHost.classList.remove("is-hidden");
 		bottomTrayHost.classList.remove("is-hidden");
 		// The tray on a side belongs to the player on that side. With
@@ -308,17 +462,29 @@ function mountResult(
 		// shows white's captures and the top tray shows black's.
 		const bottomColor = state.orientation === "white" ? "w" : "b";
 		const topColor = bottomColor === "w" ? "b" : "w";
+		const topLabel =
+			topColor === "w"
+				? "Pieces captured by White"
+				: "Pieces captured by Black";
+		const bottomLabel =
+			bottomColor === "w"
+				? "Pieces captured by White"
+				: "Pieces captured by Black";
+		topTrayHost.setAttribute("aria-label", topLabel);
+		bottomTrayHost.setAttribute("aria-label", bottomLabel);
+		// Always render both trays when captured pieces are enabled so the
+		// layout height stays stable (empty trays still reserve a row).
 		renderCapturedTray(topTrayHost, {
 			color: topColor,
 			totals,
 			pieceSet,
-			showAdvantage: true,
+			showAdvantage: hasAnyCaptures(totals),
 		});
 		renderCapturedTray(bottomTrayHost, {
 			color: bottomColor,
 			totals,
 			pieceSet,
-			showAdvantage: true,
+			showAdvantage: hasAnyCaptures(totals),
 		});
 	};
 
@@ -344,6 +510,7 @@ function mountResult(
 			renderMoveList(movesHost, {
 				steps: result.steps,
 				activeIndex: state.index,
+				pieceSet,
 				onSelect: (idx) => {
 					state.index = clampIndex(idx, result.steps);
 					draw();
@@ -511,12 +678,16 @@ function renderPickerStrip(
 		currentVariation: config.variation,
 		currentEndgame: config.endgame,
 		currentWccGame: config.wccgame,
+		currentFreeboard: config.freeboard === true,
 		onChange: (update) => {
 			void rewriteChessBlock(app, ctx, host, {
 				opening: update.opening ?? "",
 				variation: update.variation ?? "",
 				endgame: update.endgame ?? "",
 				wccgame: update.wccgame ?? "",
+				fen: update.fen ?? "",
+				moves: update.moves ?? "",
+				freeboard: update.freeboard ?? "",
 			});
 		},
 	});

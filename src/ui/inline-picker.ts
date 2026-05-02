@@ -12,6 +12,8 @@ export interface InlinePickerOptions {
 	currentEndgame?: string;
 	/** Currently selected WCC game slug. */
 	currentWccGame?: string;
+	/** Block is in free-board mode (`freeboard: yes`). */
+	currentFreeboard?: boolean;
 	/** All inputs collapsed into a single update — the host applies it atomically. */
 	onChange: (update: PickerUpdate) => void;
 }
@@ -28,9 +30,12 @@ export interface PickerUpdate {
 	variation?: string;
 	endgame?: string;
 	wccgame?: string;
+	freeboard?: string;
+	moves?: string;
+	fen?: string;
 }
 
-type Category = "openings" | "endgames" | "wcc";
+type Category = "openings" | "endgames" | "wcc" | "freeboard";
 
 const CATEGORY_PLACEHOLDER = "__category_placeholder__";
 const PLACEHOLDER = "__placeholder__";
@@ -40,6 +45,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
 	openings: "Openings",
 	endgames: "Endgames",
 	wcc: "World Championship",
+	freeboard: "Free board",
 };
 
 /**
@@ -78,19 +84,44 @@ export function renderInlinePicker(
 		if (cat === "openings") renderOpeningsSub(subRows, opts);
 		else if (cat === "endgames") renderEndgamesSub(subRows, opts);
 		else if (cat === "wcc") renderWccSub(subRows, opts);
+		else if (cat === "freeboard") renderFreeboardSub(subRows, opts);
 	};
 	renderSub(initialCategory);
+
+	const emitBlankCategory = (): void => {
+		opts.onChange({
+			opening: "",
+			variation: "",
+			endgame: "",
+			wccgame: "",
+			freeboard: "",
+			moves: "",
+			fen: "",
+		});
+	};
 
 	categorySelect.addEventListener("change", () => {
 		const raw = categorySelect.value;
 		if (raw === CATEGORY_PLACEHOLDER) {
 			renderSub(null);
-			opts.onChange({});
+			emitBlankCategory();
 			return;
 		}
 		const cat = raw as Category;
 		renderSub(cat);
-		opts.onChange({});
+		if (cat === "freeboard") {
+			opts.onChange({
+				opening: "",
+				variation: "",
+				endgame: "",
+				wccgame: "",
+				freeboard: "yes",
+				moves: "",
+				fen: "",
+			});
+		} else {
+			emitBlankCategory();
+		}
 	});
 }
 
@@ -177,6 +208,14 @@ function renderEndgamesSub(host: HTMLElement, opts: InlinePickerOptions): void {
 		opts.onChange({
 			endgame: v === PLACEHOLDER ? "" : v,
 		});
+	});
+}
+
+function renderFreeboardSub(host: HTMLElement, _opts: InlinePickerOptions): void {
+	const row = host.createDiv({ cls: "chess-study-inline-picker-row" });
+	row.createSpan({
+		cls: "chess-study-inline-picker-hint",
+		text: "Blank start — click pieces to move. Each move is saved in this note.",
 	});
 }
 
@@ -280,6 +319,7 @@ function shortName(name: string): string {
 }
 
 function detectCategory(opts: InlinePickerOptions): Category | null {
+	if (opts.currentFreeboard) return "freeboard";
 	if (opts.currentEndgame) return "endgames";
 	if (opts.currentWccGame) return "wcc";
 	if (opts.currentOpening) return "openings";

@@ -452,23 +452,27 @@ function drawCoordinates(svg: SVGElement, opts: BoardOptions): void {
 		const rankChar = orient === "white" ? String(8 - i) : String(i + 1);
 
 		const fileLabel = document.createElementNS(SVG_NS, "text");
+		fileLabel.classList.add("chess-study-board-coord");
 		fileLabel.setAttribute("x", String(i * 45 + 38));
 		fileLabel.setAttribute("y", "356");
 		fileLabel.setAttribute("font-size", "8");
 		fileLabel.setAttribute("font-family", "system-ui, sans-serif");
 		fileLabel.setAttribute("font-weight", "600");
 		fileLabel.setAttribute("fill", opts.coordinateColor);
+		fileLabel.setAttribute("stroke", "none");
 		fileLabel.setAttribute("pointer-events", "none");
 		fileLabel.textContent = fileChar ?? "";
 		svg.appendChild(fileLabel);
 
 		const rankLabel = document.createElementNS(SVG_NS, "text");
+		rankLabel.classList.add("chess-study-board-coord");
 		rankLabel.setAttribute("x", "3");
 		rankLabel.setAttribute("y", String(i * 45 + 11));
 		rankLabel.setAttribute("font-size", "8");
 		rankLabel.setAttribute("font-family", "system-ui, sans-serif");
 		rankLabel.setAttribute("font-weight", "600");
 		rankLabel.setAttribute("fill", opts.coordinateColor);
+		rankLabel.setAttribute("stroke", "none");
 		rankLabel.setAttribute("pointer-events", "none");
 		rankLabel.textContent = rankChar;
 		svg.appendChild(rankLabel);

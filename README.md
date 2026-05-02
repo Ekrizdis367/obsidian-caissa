@@ -17,6 +17,7 @@ A chess study plugin for [Obsidian](https://obsidian.md): embed positions, study
 ## Contents
 
 - [Quick start](#quick-start)
+- [Screenshots](#screenshots)
 - [Usage](#usage) — [Inline picker](#inline-picker), [Sizing and layout](#sizing-and-layout), [Loading whole games](#loading-whole-games), [Built-in openings](#built-in-openings), [Endgames](#endgames), [World Championship games](#world-championship-games), [Piece sets](#piece-sets)
 - [Commands](#commands)
 - [Export a board as PNG or SVG](#export-a-board-as-png-or-svg)
@@ -67,6 +68,22 @@ level: 5
 ````
 
 That's the whole mental model: every block is a starting position plus optional behavior. See [Block options reference](#block-options-reference) for every key you can use, or keep reading for guided examples.
+
+## Screenshots
+
+Images live in [`assets/`](assets/) (same paths work on GitHub and in Obsidian’s Markdown preview when the README is opened from the vault).
+
+### Opening study
+
+A built-in opening with the two-column move list and board layout:
+
+![Opening study — board and move list](assets/openings.png)
+
+### Free board
+
+Blank board mode: both colors are human, moves persist in the block as `moves:` / `freeboard:`:
+
+![Free board mode](assets/freemode.png)
 
 ## Usage
 

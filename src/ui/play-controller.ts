@@ -13,7 +13,7 @@ import { renderBoard } from "./board-renderer";
 import { renderMoveList } from "./move-list";
 import { computeCaptured, hasAnyCaptures } from "../utils/captured-pieces";
 import { renderCapturedTray } from "./captured-tray";
-import { PromotionPickerModal } from "./promotion-picker";
+import { pickPromotionPiece } from "./promotion-picker";
 
 /**
  * Play-vs-Stockfish controller.
@@ -174,6 +174,18 @@ export function renderPlayBlock(args: PlayControllerArgs): void {
 		bottomTrayHost.classList.remove("is-hidden");
 		const bottomColor: PieceColor = humanColor;
 		const topColor: PieceColor = humanColor === "w" ? "b" : "w";
+		topTrayHost.setAttribute(
+			"aria-label",
+			topColor === "w"
+				? "Pieces captured by White"
+				: "Pieces captured by Black"
+		);
+		bottomTrayHost.setAttribute(
+			"aria-label",
+			bottomColor === "w"
+				? "Pieces captured by White"
+				: "Pieces captured by Black"
+		);
 		renderCapturedTray(topTrayHost, {
 			color: topColor,
 			totals,
@@ -194,6 +206,8 @@ export function renderPlayBlock(args: PlayControllerArgs): void {
 		renderMoveList(movesHost, {
 			steps,
 			activeIndex: steps.length - 1,
+			pieceSet,
+			activeTurn: chess.turn(),
 			onSelect: () => {
 				/* clicking moves doesn't seek mid-game (would diverge
 				   from the current position); kept passive on purpose. */
@@ -265,7 +279,7 @@ export function renderPlayBlock(args: PlayControllerArgs): void {
 			(m: Move) => (m.promotion ?? "") !== ""
 		);
 		if (needsPromotion) {
-			void promptPromotion(app, humanColor).then((piece) => {
+			void pickPromotionPiece(app, humanColor).then((piece) => {
 				if (!piece) return;
 				applyMove({ from, to: sq, promotion: piece });
 			});
@@ -423,20 +437,4 @@ export function renderPlayBlock(args: PlayControllerArgs): void {
 	if (chess.turn() !== humanColor) {
 		void requestEngineMove();
 	}
-}
-
-/**
- * Show the promotion picker modal and resolve with the user's pick, or
- * `null` if they dismissed it (in which case we abandon the move).
- */
-function promptPromotion(
-	app: App,
-	color: PieceColor
-): Promise<PieceType | null> {
-	return new Promise<PieceType | null>((resolve) => {
-		const modal = new PromotionPickerModal(app, color, (pick) =>
-			resolve(pick)
-		);
-		modal.open();
-	});
 }

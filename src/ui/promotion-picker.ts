@@ -15,6 +15,19 @@ const PROMOTION_PIECES: PieceType[] = ["q", "r", "b", "n"];
  * laid out left-to-right in descending value, and each is a big easy-to-tap
  * target so it works on touch.
  */
+/** Promise wrapper for {@link PromotionPickerModal} (dismiss → `null`). */
+export function pickPromotionPiece(
+	app: App,
+	color: PieceColor
+): Promise<PieceType | null> {
+	return new Promise<PieceType | null>((resolve) => {
+		const modal = new PromotionPickerModal(app, color, (pick) =>
+			resolve(pick)
+		);
+		modal.open();
+	});
+}
+
 export class PromotionPickerModal extends Modal {
 	private color: PieceColor;
 	private onPick: (piece: PieceType | null) => void;

@@ -133,6 +133,11 @@ export interface ChessBlockConfig {
 	endgame?: string;
 	/** WCC game slug (e.g. "1972-fischer-spassky-06"). */
 	wccgame?: string;
+	/**
+	 * Free-form board: both sides are human; moves are written back to the
+	 * note as `moves:` (SAN list). Use the inline picker's "Free board" category.
+	 */
+	freeboard?: boolean;
 	moves?: string;
 	/** Full PGN text (headers + moves). Wins over `moves` if both are set. */
 	pgn?: string;
@@ -197,6 +202,12 @@ export interface OpeningVariation {
 	name: string;
 	moves: string;
 	description?: string;
+	/**
+	 * Optional link shown below the description (e.g. a Lichess study).
+	 * If omitted, the engine still builds a default Lichess opening-explorer
+	 * URL from the variation’s move sequence when the block uses this opening.
+	 */
+	guideUrl?: string;
 }
 
 export interface Opening {
@@ -204,5 +215,7 @@ export interface Opening {
 	aliases?: string[];
 	moves: string;
 	description?: string;
+	/** Optional override for the “read more” link; see {@link OpeningVariation.guideUrl}. */
+	guideUrl?: string;
 	variations?: OpeningVariation[];
 }

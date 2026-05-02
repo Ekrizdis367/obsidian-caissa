@@ -1,8 +1,21 @@
 import { Chess } from "chess.js";
-import { findOpening } from "./openings";
+import {
+	findOpening,
+	lichessExplorerUrlForMoves,
+	type OpeningLookupResult,
+} from "./openings";
 import { findEndgame } from "./endgames";
 import { findWccGame } from "./wcc-games";
 import type { PgnHeaders, PieceType } from "../types";
+
+/** Prefer a non-empty variation blurb; fall back to the family opening text. */
+export function pickOpeningDescription(
+	lookup: OpeningLookupResult
+): string | undefined {
+	const fromVariation = lookup.variation?.description?.trim();
+	if (fromVariation) return fromVariation;
+	return lookup.opening.description?.trim();
+}
 
 export interface PositionStep {
 	/** FEN string for this position. */
@@ -27,6 +40,8 @@ export interface BuildResult {
 	steps: PositionStep[];
 	resolvedTitle?: string;
 	resolvedDescription?: string;
+	/** Present when the block resolved opening metadata from the bundled library. */
+	resolvedGuideUrl?: string;
 	headers?: PgnHeaders;
 	error?: string;
 }
@@ -85,6 +100,7 @@ export function buildPositions(args: {
 			...inner,
 			resolvedTitle: endgame.name,
 			resolvedDescription: endgame.description,
+			resolvedGuideUrl: undefined,
 		};
 	}
 
@@ -92,6 +108,7 @@ export function buildPositions(args: {
 	let title: string | undefined;
 	let description: string | undefined;
 	let movesSource = args.moves?.trim();
+	let openingLibraryLookup: OpeningLookupResult | null = null;
 
 	if (!movesSource && (args.opening || args.variation)) {
 		const lookup = findOpening(args.opening, args.variation);
@@ -103,22 +120,33 @@ export function buildPositions(args: {
 					: "Variation given without an opening",
 			};
 		}
+		openingLibraryLookup = lookup;
 		movesSource = lookup.moves;
 		title = lookup.variation
 			? `${lookup.opening.name} — ${lookup.variation.name}`
 			: lookup.opening.name;
-		description =
-			lookup.variation?.description ?? lookup.opening.description;
+		description = pickOpeningDescription(lookup);
 	} else if (args.opening) {
 		const lookup = findOpening(args.opening, args.variation);
 		if (lookup) {
+			openingLibraryLookup = lookup;
 			title = lookup.variation
 				? `${lookup.opening.name} — ${lookup.variation.name}`
 				: lookup.opening.name;
-			description =
-				lookup.variation?.description ?? lookup.opening.description;
+			description = pickOpeningDescription(lookup);
 		}
 	}
+
+	const openingGuideUrl = (): string | undefined => {
+		if (!openingLibraryLookup) return undefined;
+		const moveLine =
+			movesSource?.trim() || openingLibraryLookup.moves;
+		return (
+			openingLibraryLookup.variation?.guideUrl ??
+			openingLibraryLookup.opening.guideUrl ??
+			lichessExplorerUrlForMoves(moveLine)
+		);
+	};
 
 	let chess: Chess;
 	try {
@@ -129,6 +157,7 @@ export function buildPositions(args: {
 			error: `Invalid FEN: ${(e as Error).message}`,
 			resolvedTitle: title,
 			resolvedDescription: description,
+			resolvedGuideUrl: openingGuideUrl(),
 		};
 	}
 
@@ -139,6 +168,7 @@ export function buildPositions(args: {
 			steps,
 			resolvedTitle: title,
 			resolvedDescription: description,
+			resolvedGuideUrl: openingGuideUrl(),
 		};
 	}
 
@@ -162,6 +192,7 @@ export function buildPositions(args: {
 				error: `Illegal move "${san}": ${(e as Error).message}`,
 				resolvedTitle: title,
 				resolvedDescription: description,
+				resolvedGuideUrl: openingGuideUrl(),
 			};
 		}
 	}
@@ -170,6 +201,7 @@ export function buildPositions(args: {
 		steps,
 		resolvedTitle: title,
 		resolvedDescription: description,
+		resolvedGuideUrl: openingGuideUrl(),
 	};
 }
 
@@ -326,7 +358,7 @@ function descriptionFromHeaders(h: PgnHeaders): string | undefined {
  * Strip move numbers, comments, NAGs, and result markers from a move string,
  * leaving only SAN tokens.
  */
-function tokenizeMoves(input: string): string[] {
+export function tokenizeMoves(input: string): string[] {
 	const cleaned = input
 		.replace(/\{[^}]*\}/g, " ")
 		.replace(/\([^)]*\)/g, " ")

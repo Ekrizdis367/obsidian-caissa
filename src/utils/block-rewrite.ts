@@ -9,6 +9,12 @@ export interface BlockRewriteUpdates {
 	endgame?: string;
 	/** Set the `wccgame:` key. Pass empty string to remove it. */
 	wccgame?: string;
+	/** Set `fen:` (empty removes). */
+	fen?: string;
+	/** Set `moves:` SAN list (empty removes). */
+	moves?: string;
+	/** Set `freeboard:` (empty removes). */
+	freeboard?: string;
 }
 
 /** Keys whose lines we may rewrite or strip. Anything else is preserved verbatim. */
@@ -18,6 +24,9 @@ const REWRITABLE_KEYS = new Set([
 	"endgame",
 	"wccgame",
 	"wcc",
+	"fen",
+	"moves",
+	"freeboard",
 ]);
 
 /**
@@ -127,6 +136,15 @@ function applyUpdates(
 	}
 	if (updates.wccgame && updates.wccgame.trim()) {
 		newKeyLines.push(`wccgame: ${updates.wccgame.trim()}`);
+	}
+	if (updates.fen && updates.fen.trim()) {
+		newKeyLines.push(`fen: ${updates.fen.trim()}`);
+	}
+	if (updates.moves && updates.moves.trim()) {
+		newKeyLines.push(`moves: ${updates.moves.trim()}`);
+	}
+	if (updates.freeboard && updates.freeboard.trim()) {
+		newKeyLines.push(`freeboard: ${updates.freeboard.trim()}`);
 	}
 
 	if (preserved.length === 0) {

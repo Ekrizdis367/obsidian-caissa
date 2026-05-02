@@ -1,4 +1,8 @@
 import type { PositionStep } from "../chess/engine";
+import type { PieceSet } from "../types";
+import { createPieceNode, getPieceGlyph, type PieceKey } from "../chess/pieces";
+
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 export interface MoveListOptions {
 	/** All position steps including index 0 (the start position). */
@@ -7,6 +11,18 @@ export interface MoveListOptions {
 	activeIndex: number;
 	/** Called when the user clicks a half-move; arg is the resulting step index. */
 	onSelect: (stepIndex: number) => void;
+	/** Active piece set for header king icons (matches the board). */
+	pieceSet: PieceSet;
+	/**
+	 * Side to move for header emphasis. If omitted, derived from
+	 * `steps[activeIndex]` FEN when available.
+	 */
+	activeTurn?: "w" | "b";
+	/**
+	 * When false, neither king header is outlined (e.g. finished free-board game).
+	 * Default true.
+	 */
+	highlightHeaderTurn?: boolean;
 }
 
 /**
@@ -20,11 +36,31 @@ export function renderMoveList(host: HTMLElement, opts: MoveListOptions): void {
 
 	const moves = opts.steps.slice(1);
 
+	const highlightHeader = opts.highlightHeaderTurn !== false;
+	const turnToMove = highlightHeader
+		? opts.activeTurn ??
+			turnFromFen(
+				opts.steps[clampActiveIndex(opts.activeIndex, opts.steps)]?.fen
+			)
+		: undefined;
+
 	const table = host.createDiv({ cls: "chess-study-move-table" });
 	const header = table.createDiv({ cls: "chess-study-move-row header" });
 	header.createSpan({ cls: "chess-study-move-num", text: "#" });
-	header.createSpan({ cls: "chess-study-move-cell header", text: "White" });
-	header.createSpan({ cls: "chess-study-move-cell header", text: "Black" });
+	appendHeaderKingCell(
+		header,
+		opts.pieceSet,
+		"wk",
+		"White",
+		turnToMove === "w"
+	);
+	appendHeaderKingCell(
+		header,
+		opts.pieceSet,
+		"bk",
+		"Black",
+		turnToMove === "b"
+	);
 
 	if (moves.length === 0) {
 		host.createDiv({
@@ -40,7 +76,7 @@ export function renderMoveList(host: HTMLElement, opts: MoveListOptions): void {
 		const row = table.createDiv({ cls: "chess-study-move-row" });
 		row.createSpan({
 			cls: "chess-study-move-num",
-			text: `${moveNumber}.`,
+			text: String(moveNumber),
 		});
 
 		const whiteMove = moves[i];
@@ -82,5 +118,53 @@ function renderCell(
 			e.preventDefault();
 			opts.onSelect(stepIndex);
 		}
+	});
+}
+
+function clampActiveIndex(activeIndex: number, steps: PositionStep[]): number {
+	if (steps.length === 0) return 0;
+	return Math.max(0, Math.min(activeIndex, steps.length - 1));
+}
+
+function turnFromFen(fen: string | undefined): "w" | "b" | undefined {
+	if (!fen) return undefined;
+	const side = fen.trim().split(/\s+/)[1];
+	if (side === "w" || side === "b") return side;
+	return undefined;
+}
+
+function appendHeaderKingCell(
+	row: HTMLElement,
+	pieceSet: PieceSet,
+	key: Extract<PieceKey, "wk" | "bk">,
+	label: string,
+	isSideToMove: boolean
+): void {
+	const cell = row.createSpan({
+		cls: `chess-study-move-cell header header-king${
+			isSideToMove ? " header-king-to-move" : ""
+		}`,
+		attr: {
+			"aria-label": label,
+			title: isSideToMove ? `${label} to move` : label,
+		},
+	});
+	if (pieceSet !== "unicode") {
+		const node = createPieceNode(pieceSet, key);
+		if (node) {
+			const svg = document.createElementNS(SVG_NS, "svg");
+			svg.setAttribute("viewBox", "0 0 45 45");
+			svg.setAttribute("xmlns", SVG_NS);
+			svg.classList.add("chess-study-move-header-king-svg");
+			svg.setAttribute("aria-hidden", "true");
+			svg.appendChild(node);
+			cell.appendChild(svg);
+			return;
+		}
+	}
+	cell.createSpan({
+		cls: "chess-study-move-header-king-glyph",
+		text: getPieceGlyph(key),
+		attr: { "aria-hidden": "true" },
 	});
 }
