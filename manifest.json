@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-caissa",
+	"name": "Caissa",
+	"version": "1.0.0",
+	"minAppVersion": "1.12.0",
+	"description": "Study chess in your vault. Embed positions, study openings and endgames, browse World Championship games, annotate PGNs, and explore Lichess opening statistics.",
+	"author": "TheEkrizdis",
+	"authorUrl": "",
+	"isDesktopOnly": false
+}

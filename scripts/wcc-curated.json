@@ -1,0 +1,145 @@
+{
+	"_comment": "Curated WCC games to bundle. Each match downloads the full PGN from PGN Mentor and the script extracts the listed game rounds. matchSlug is used in lookup IDs (e.g. 1972-fischer-spassky-06).",
+	"matches": [
+		{
+			"matchSlug": "1886-steinitz-zukertort",
+			"matchLabel": "1886 — Steinitz vs Zukertort",
+			"matchYear": 1886,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1886.pgn",
+			"games": [1, 9, 20]
+		},
+		{
+			"matchSlug": "1894-lasker-steinitz",
+			"matchLabel": "1894 — Lasker vs Steinitz",
+			"matchYear": 1894,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1894.pgn",
+			"games": [5, 7, 17, 19]
+		},
+		{
+			"matchSlug": "1921-capablanca-lasker",
+			"matchLabel": "1921 — Capablanca vs Lasker",
+			"matchYear": 1921,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1921.pgn",
+			"games": [5, 10, 11, 14]
+		},
+		{
+			"matchSlug": "1927-alekhine-capablanca",
+			"matchLabel": "1927 — Alekhine vs Capablanca",
+			"matchYear": 1927,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1927.pgn",
+			"games": [1, 11, 21, 32, 34]
+		},
+		{
+			"matchSlug": "1948-botvinnik-tournament",
+			"matchLabel": "1948 — Botvinnik 1st (tournament)",
+			"matchYear": 1948,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1948.pgn",
+			"games": [9, 14, 21]
+		},
+		{
+			"matchSlug": "1951-botvinnik-bronstein",
+			"matchLabel": "1951 — Botvinnik vs Bronstein",
+			"matchYear": 1951,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1951.pgn",
+			"games": [12, 17, 22]
+		},
+		{
+			"matchSlug": "1960-tal-botvinnik",
+			"matchLabel": "1960 — Tal vs Botvinnik",
+			"matchYear": 1960,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1960.pgn",
+			"games": [1, 6, 17]
+		},
+		{
+			"matchSlug": "1972-fischer-spassky",
+			"matchLabel": "1972 — Fischer vs Spassky",
+			"matchYear": 1972,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1972.pgn",
+			"games": [1, 3, 6, 8, 13, 21]
+		},
+		{
+			"matchSlug": "1985-kasparov-karpov",
+			"matchLabel": "1985 — Kasparov vs Karpov",
+			"matchYear": 1985,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1985.pgn",
+			"games": [4, 11, 16, 19, 24]
+		},
+		{
+			"matchSlug": "1990-kasparov-karpov",
+			"matchLabel": "1990 — Kasparov vs Karpov",
+			"matchYear": 1990,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp1990.pgn",
+			"games": [2, 18, 20]
+		},
+		{
+			"matchSlug": "2000-kramnik-kasparov",
+			"matchLabel": "2000 — Kramnik vs Kasparov",
+			"matchYear": 2000,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2000.pgn",
+			"games": [1, 2, 10, 13]
+		},
+		{
+			"matchSlug": "2008-anand-kramnik",
+			"matchLabel": "2008 — Anand vs Kramnik",
+			"matchYear": 2008,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2008.pgn",
+			"games": [3, 5, 6]
+		},
+		{
+			"matchSlug": "2010-anand-topalov",
+			"matchLabel": "2010 — Anand vs Topalov",
+			"matchYear": 2010,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2010.pgn",
+			"games": [4, 12]
+		},
+		{
+			"matchSlug": "2013-carlsen-anand",
+			"matchLabel": "2013 — Carlsen vs Anand",
+			"matchYear": 2013,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2013.pgn",
+			"games": [5, 6, 9]
+		},
+		{
+			"matchSlug": "2014-carlsen-anand",
+			"matchLabel": "2014 — Carlsen vs Anand",
+			"matchYear": 2014,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2014.pgn",
+			"games": [2, 6, 11]
+		},
+		{
+			"matchSlug": "2016-carlsen-karjakin",
+			"matchLabel": "2016 — Carlsen vs Karjakin",
+			"matchYear": 2016,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2016.pgn",
+			"games": [8, 10]
+		},
+		{
+			"matchSlug": "2018-carlsen-caruana",
+			"matchLabel": "2018 — Carlsen vs Caruana",
+			"matchYear": 2018,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2018.pgn",
+			"games": [1, 6, 12]
+		},
+		{
+			"matchSlug": "2021-carlsen-nepomniachtchi",
+			"matchLabel": "2021 — Carlsen vs Nepomniachtchi",
+			"matchYear": 2021,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2021.pgn",
+			"games": [6, 8, 9]
+		},
+		{
+			"matchSlug": "2023-ding-nepomniachtchi",
+			"matchLabel": "2023 — Ding vs Nepomniachtchi",
+			"matchYear": 2023,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2023.pgn",
+			"games": [4, 6, 12]
+		},
+		{
+			"matchSlug": "2024-gukesh-ding",
+			"matchLabel": "2024 — Gukesh vs Ding",
+			"matchYear": 2024,
+			"pgnUrl": "https://pgnmentor.com/events/WorldChamp2024.pgn",
+			"games": [3, 11, 14]
+		}
+	]
+}

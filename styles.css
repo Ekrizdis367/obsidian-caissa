@@ -1,0 +1,905 @@
+/* Caissa plugin styles */
+
+.chess-study-block {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin: 0.75rem 0;
+	color: var(--text-normal);
+	/* Lets us use container queries against the writing pane width
+	   rather than the full viewport — important for split-pane editing. */
+	container-type: inline-size;
+	container-name: chess-block;
+}
+
+.chess-study-title {
+	font-size: 1.05em;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+}
+
+.chess-study-description {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+/* --- Game header (PGN headers strip) ----------------------------------- */
+
+.chess-study-game-header {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+	padding: 0.4rem 0.6rem;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.chess-study-players {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	font-size: 0.95em;
+	font-weight: 600;
+}
+
+.chess-study-player {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.3rem;
+}
+
+.chess-study-player-dot {
+	display: inline-block;
+	width: 0.65rem;
+	height: 0.65rem;
+	border-radius: 50%;
+	border: 1px solid var(--background-modifier-border);
+	transform: translateY(0.05rem);
+}
+
+.chess-study-player-white .chess-study-player-dot {
+	background: #f4f4f4;
+}
+.chess-study-player-black .chess-study-player-dot {
+	background: #2a2a2a;
+}
+
+.chess-study-player-title {
+	font-size: 0.78em;
+	font-weight: 700;
+	color: var(--text-accent);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.chess-study-player-elo {
+	font-weight: 400;
+	font-size: 0.85em;
+	color: var(--text-muted);
+}
+
+.chess-study-versus {
+	font-weight: 400;
+	color: var(--text-muted);
+	font-size: 0.85em;
+}
+
+.chess-study-result {
+	margin-left: auto;
+	font-variant-numeric: tabular-nums;
+	font-weight: 700;
+	color: var(--text-normal);
+}
+
+.chess-study-game-meta {
+	font-size: 0.85em;
+	color: var(--text-muted);
+}
+
+/* --- Inline category/opening/endgame/WCC picker ------------------------ */
+
+.chess-study-inline-picker-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	padding: 0.5rem 0.6rem;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.chess-study-inline-picker {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.chess-study-inline-picker-subrows,
+.chess-study-inline-picker-gamerow-wrap {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+}
+
+.chess-study-inline-picker-subrows:empty,
+.chess-study-inline-picker-gamerow-wrap:empty {
+	display: none;
+}
+
+.chess-study-inline-picker-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.chess-study-inline-picker-label {
+	flex: 0 0 auto;
+	font-size: 0.85em;
+	font-weight: 600;
+	color: var(--text-muted);
+	min-width: 5.5rem;
+}
+
+.chess-study-inline-picker-select {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0.25rem 0.4rem;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	font-size: 0.9em;
+}
+
+/* --- Loading indicator (async game fetch) ------------------------------ */
+
+.chess-study-loading {
+	padding: 0.5rem 0.75rem;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 0.9em;
+}
+
+/* --- Layout ------------------------------------------------------------ */
+
+.chess-study-layout {
+	display: grid;
+	gap: 1rem;
+	align-items: start;
+	outline: none;
+	border-radius: 4px;
+}
+
+/* Soft focus ring so users know keyboard shortcuts (←/→, Home/End, F)
+   are active. Only visible when focused via keyboard or after clicking. */
+.chess-study-layout:focus-visible {
+	box-shadow: 0 0 0 2px var(--interactive-accent);
+}
+
+/* Default (`size: medium`): board capped at 360px, moves to the right. */
+.chess-study-layout.size-medium {
+	grid-template-columns: minmax(220px, 360px) minmax(180px, 1fr);
+}
+.chess-study-layout.size-medium .chess-study-board-wrap,
+.chess-study-layout.size-medium .chess-study-controls {
+	max-width: 360px;
+}
+
+.chess-study-layout.size-small {
+	grid-template-columns: minmax(180px, 240px) minmax(160px, 1fr);
+}
+.chess-study-layout.size-small .chess-study-board-wrap,
+.chess-study-layout.size-small .chess-study-controls {
+	max-width: 240px;
+}
+
+.chess-study-layout.size-large {
+	grid-template-columns: minmax(280px, 500px) minmax(200px, 1fr);
+}
+.chess-study-layout.size-large .chess-study-board-wrap,
+.chess-study-layout.size-large .chess-study-controls {
+	max-width: 500px;
+}
+
+/* `size: full` always stacks (board full-width, moves below). */
+.chess-study-layout.size-full {
+	grid-template-columns: 1fr;
+}
+.chess-study-layout.size-full .chess-study-board-wrap,
+.chess-study-layout.size-full .chess-study-controls {
+	max-width: none;
+}
+
+/* No moves panel — board takes the full row regardless of size, but caps
+   stay in place so a non-`full` board doesn't suddenly stretch. With nothing
+   to the right of the board, center the board (and its controls) within the
+   available width instead of letting it left-align awkwardly. */
+.chess-study-layout.no-moves {
+	grid-template-columns: 1fr;
+}
+.chess-study-layout.no-moves .chess-study-board-col {
+	align-items: center;
+}
+.chess-study-layout.no-moves .chess-study-board-wrap,
+.chess-study-layout.no-moves .chess-study-controls {
+	width: 100%;
+}
+
+/* Container-query collapse: when the writing area is narrow, every size
+   except the already-stacked `full`/`no-moves` collapses to a single column
+   (board on top, moves below) — this is the phone/narrow-pane behavior. */
+@container chess-block (max-width: 520px) {
+	.chess-study-layout.size-small,
+	.chess-study-layout.size-medium,
+	.chess-study-layout.size-large {
+		grid-template-columns: 1fr;
+	}
+	.chess-study-layout.size-small .chess-study-board-wrap,
+	.chess-study-layout.size-small .chess-study-controls,
+	.chess-study-layout.size-medium .chess-study-board-wrap,
+	.chess-study-layout.size-medium .chess-study-controls,
+	.chess-study-layout.size-large .chess-study-board-wrap,
+	.chess-study-layout.size-large .chess-study-controls {
+		max-width: none;
+	}
+}
+
+/* --- Board column ------------------------------------------------------ */
+
+.chess-study-board-col {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+.chess-study-board-wrap {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1 / 1;
+	border-radius: 4px;
+	overflow: hidden;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+	background: var(--background-secondary);
+}
+
+.chess-study-board {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* --- Captured pieces trays + material balance -------------------------- */
+
+.chess-study-captured-wrap {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	min-height: 1.4rem;
+	padding: 0.1rem 0.15rem;
+	font-size: 0.85em;
+}
+
+.chess-study-captured-wrap.is-hidden {
+	display: none;
+}
+
+.chess-study-captured-group {
+	display: inline-flex;
+	align-items: center;
+}
+
+/* Stack same-piece copies tightly so a 7-pawn capture doesn't take half
+   the board's width. The negative margin overlaps neighbors slightly. */
+.chess-study-captured-group .chess-study-captured-piece + .chess-study-captured-piece {
+	margin-left: -0.55em;
+}
+
+.chess-study-captured-piece {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.2em;
+	height: 1.2em;
+	line-height: 1;
+}
+
+.chess-study-captured-svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.chess-study-captured-glyph {
+	font-size: 1.2em;
+	line-height: 1;
+}
+
+.chess-study-captured-adv {
+	margin-left: 0.5em;
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+/* --- Controls ---------------------------------------------------------- */
+
+.chess-study-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.chess-study-control {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+}
+
+.chess-study-control:hover:not([disabled]) {
+	background: var(--background-modifier-hover);
+}
+
+.chess-study-control[disabled] {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.chess-study-control-spacer {
+	flex: 1;
+}
+
+/* --- Move list --------------------------------------------------------- */
+
+.chess-study-side-col {
+	min-width: 0;
+}
+
+.chess-study-moves-wrap {
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	padding: 0.5rem 0.75rem;
+	max-height: 360px;
+	overflow-y: auto;
+}
+
+.chess-study-moves {
+	display: block;
+	font-family: var(--font-monospace, monospace);
+	font-size: 0.9em;
+	line-height: 1.6;
+}
+
+.chess-study-move-row {
+	display: grid;
+	grid-template-columns: 2rem 1fr 1fr;
+	gap: 0.25rem;
+	align-items: baseline;
+}
+
+.chess-study-moves-empty {
+	margin-top: 0.25rem;
+	padding: 0.4rem 0.5rem;
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 0.85em;
+}
+
+.chess-study-move-row.header {
+	font-size: 0.75em;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-muted);
+	border-bottom: 1px solid var(--background-modifier-border);
+	margin-bottom: 0.25rem;
+	padding-bottom: 0.15rem;
+}
+
+.chess-study-move-row.header .chess-study-move-cell {
+	cursor: default;
+	background: transparent;
+}
+
+.chess-study-move-num {
+	color: var(--text-muted);
+	text-align: right;
+	padding-right: 0.25rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.chess-study-move-cell {
+	cursor: pointer;
+	padding: 0 0.35rem;
+	border-radius: 3px;
+	transition: background-color 0.1s ease;
+	min-height: 1.4em;
+}
+
+.chess-study-move-cell:hover {
+	background: var(--background-modifier-hover);
+}
+
+.chess-study-move-cell.active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-weight: 600;
+}
+
+.chess-study-move-cell.empty {
+	cursor: default;
+	color: transparent;
+	pointer-events: none;
+}
+
+/* --- Errors ------------------------------------------------------------ */
+
+.chess-study-error {
+	margin-top: 0.5rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 4px;
+	background: var(--background-modifier-error);
+	color: var(--text-error);
+	font-family: var(--font-monospace, monospace);
+	font-size: 0.85em;
+}
+
+/* --- Lines (opening explorer) panel ----------------------------------- */
+
+.chess-study-lines-wrap {
+	margin-top: 0.5rem;
+	padding: 0.75rem 1rem;
+	border-radius: 6px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.chess-study-lines-header {
+	display: flex;
+	align-items: baseline;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.chess-study-lines-title {
+	font-weight: 700;
+	font-size: 1.1em;
+	color: var(--text-accent);
+	letter-spacing: 0.02em;
+}
+
+.chess-study-lines-meta {
+	font-size: 0.8em;
+	color: var(--text-muted);
+	margin-bottom: 0.5rem;
+}
+
+.chess-study-lines-status {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	font-style: italic;
+	padding: 0.25rem 0;
+}
+
+.chess-study-lines-status.error {
+	color: var(--text-error);
+	font-style: normal;
+}
+
+.chess-study-lines-table {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.chess-study-lines-row {
+	display: grid;
+	grid-template-columns: 5rem 1fr;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.chess-study-lines-label {
+	font-family: var(--font-monospace, monospace);
+	font-size: 0.95em;
+	font-weight: 600;
+	color: var(--text-accent);
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.chess-study-lines-bar {
+	display: flex;
+	width: 100%;
+	height: 1.6rem;
+	border-radius: 3px;
+	overflow: hidden;
+	background: var(--background-primary);
+}
+
+.chess-study-lines-seg {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	overflow: hidden;
+	transition: width 0.15s ease;
+}
+
+.chess-study-lines-seg.seg-white {
+	background: #2e8b3a;
+	color: #ffffff;
+}
+
+.chess-study-lines-seg.seg-draws {
+	background: #a8a8a8;
+	color: #1a1a1a;
+}
+
+.chess-study-lines-seg.seg-black {
+	background: #d6383b;
+	color: #ffffff;
+}
+
+.chess-study-lines-seg-label {
+	font-size: 0.78em;
+	font-weight: 600;
+	white-space: nowrap;
+	padding: 0 0.25rem;
+}
+
+/* --- Openings quiz modal ---------------------------------------------- */
+
+.chess-study-quiz-modal {
+	max-width: 460px;
+}
+
+.chess-study-quiz-help {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	margin-bottom: 0.8rem;
+}
+
+.chess-study-quiz-score {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-weight: 600;
+	margin-bottom: 0.6rem;
+}
+
+.chess-study-quiz-streak {
+	color: var(--text-muted);
+	font-weight: 400;
+}
+
+.chess-study-quiz-board {
+	width: 320px;
+	max-width: 100%;
+	aspect-ratio: 1 / 1;
+	margin: 0 auto 0.75rem;
+	border-radius: 4px;
+	overflow: hidden;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+	background: var(--background-secondary);
+}
+
+.chess-study-quiz-board svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.chess-study-quiz-prompt {
+	font-size: 0.95em;
+	margin-bottom: 0.5rem;
+	text-align: center;
+}
+
+.chess-study-quiz-side {
+	font-weight: 600;
+}
+
+.chess-study-quiz-mystery {
+	color: var(--text-muted);
+}
+
+.chess-study-quiz-input-row {
+	display: flex;
+	gap: 0.4rem;
+	align-items: center;
+	margin-bottom: 0.6rem;
+}
+
+.chess-study-quiz-input-row .is-hidden {
+	display: none;
+}
+
+.chess-study-quiz-input {
+	flex: 1;
+	padding: 0.4rem 0.6rem;
+	font-family: var(--font-monospace, monospace);
+	font-size: 0.95em;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+}
+
+.chess-study-quiz-input:focus {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -1px;
+}
+
+.chess-study-quiz-feedback {
+	min-height: 1.4em;
+	font-weight: 500;
+}
+
+.chess-study-quiz-feedback.is-correct {
+	color: var(--text-success, #2e8b3a);
+}
+
+.chess-study-quiz-feedback.is-incorrect {
+	color: var(--text-error, #d6383b);
+}
+
+.chess-study-quiz-reveal {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	margin-top: 0.2rem;
+}
+
+/* --- Engine analysis panel + eval graph -------------------------------- */
+
+.chess-study-analysis-wrap {
+	margin-top: 0.5rem;
+}
+
+.chess-study-analysis {
+	display: grid;
+	grid-template-columns: 24px 1fr;
+	gap: 0.5rem;
+	padding: 0.4rem;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.chess-study-eval-bar {
+	position: relative;
+	width: 24px;
+	height: 100%;
+	min-height: 80px;
+	border-radius: 3px;
+	overflow: hidden;
+	background: #2a2a2a;
+}
+
+.chess-study-eval-fill {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+.chess-study-eval-fill.is-white {
+	bottom: 0;
+	background: #f1f1f1;
+}
+
+.chess-study-eval-fill.is-black {
+	top: 0;
+	background: #2a2a2a;
+}
+
+.chess-study-eval-label {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 50%;
+	transform: translateY(50%);
+	text-align: center;
+	font-size: 0.7em;
+	font-weight: 600;
+	color: var(--text-on-accent, #fff);
+	mix-blend-mode: difference;
+	pointer-events: none;
+}
+
+.chess-study-engine-lines {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+	min-width: 0;
+	font-family: var(--font-monospace, monospace);
+	font-size: 0.85em;
+}
+
+.chess-study-engine-loading,
+.chess-study-engine-empty,
+.chess-study-engine-error {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.chess-study-engine-error {
+	color: var(--text-error, #d6383b);
+}
+
+.chess-study-engine-line {
+	display: grid;
+	grid-template-columns: 4ch 3ch 1fr;
+	gap: 0.4rem;
+	align-items: baseline;
+	min-width: 0;
+}
+
+.chess-study-engine-eval {
+	font-weight: 600;
+	color: var(--text-accent);
+	text-align: right;
+}
+
+.chess-study-engine-depth {
+	color: var(--text-muted);
+	font-size: 0.85em;
+}
+
+.chess-study-engine-pv {
+	color: var(--text-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Eval graph */
+
+.chess-study-eval-graph-wrap {
+	margin-top: 0.5rem;
+}
+
+.chess-study-eval-graph {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	padding: 0.4rem;
+	border-radius: 4px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+}
+
+.chess-study-eval-graph-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.chess-study-eval-graph-title {
+	font-weight: 600;
+	font-size: 0.9em;
+}
+
+.chess-study-eval-graph-btn {
+	padding: 0.2rem 0.6rem;
+	font-size: 0.85em;
+	border-radius: 3px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	color: var(--text-normal);
+	cursor: pointer;
+}
+
+.chess-study-eval-graph-btn:hover:not([disabled]) {
+	background: var(--interactive-hover);
+}
+
+.chess-study-eval-graph-btn[disabled] {
+	opacity: 0.6;
+	cursor: progress;
+}
+
+.chess-study-eval-graph-status {
+	font-size: 0.8em;
+	color: var(--text-muted);
+}
+
+.chess-study-eval-graph-canvas {
+	width: 100%;
+	height: 80px;
+}
+
+.chess-study-eval-graph-svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+	cursor: crosshair;
+	border-radius: 3px;
+}
+
+/* --- Play vs Stockfish ------------------------------------------------- */
+
+.chess-study-play-status {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 1.5em;
+	padding: 0.2rem 0;
+	font-size: 0.95em;
+}
+
+.chess-study-play-status-text {
+	font-weight: 500;
+	color: var(--text-normal);
+}
+
+.chess-study-play-status-text.is-thinking {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.chess-study-play-status-text.is-gameover {
+	color: var(--text-accent);
+	font-weight: 600;
+}
+
+.chess-study-play-controls {
+	gap: 0.4rem;
+}
+
+/* Make the board cursor signal that it's clickable in play mode. */
+.chess-study-board.is-clickable {
+	cursor: pointer;
+}
+
+.chess-study-board-target {
+	cursor: pointer;
+}
+
+/* --- Promotion picker modal ------------------------------------------- */
+
+.chess-study-promotion-modal .modal-content {
+	min-width: 0;
+}
+
+.chess-study-promotion-row {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: center;
+	padding: 0.5rem 0;
+}
+
+.chess-study-promotion-choice {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 64px;
+	height: 64px;
+	padding: 4px;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	cursor: pointer;
+}
+
+.chess-study-promotion-choice:hover {
+	background: var(--interactive-hover);
+}
+
+.chess-study-promotion-svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
