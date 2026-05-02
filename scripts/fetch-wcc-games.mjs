@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * One-shot build script. Reads scripts/wcc-curated.json, downloads each
  * match's PGN from PGN Mentor, extracts the curated game rounds, and emits
