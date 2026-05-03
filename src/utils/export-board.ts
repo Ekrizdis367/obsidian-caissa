@@ -38,13 +38,14 @@ export async function downloadBoardAsPng(
 	triggerDownload(blob, filename);
 }
 
-export async function downloadBoardAsSvg(
+export function downloadBoardAsSvg(
 	svgEl: SVGElement,
 	filename: string
 ): Promise<void> {
 	const xml = serializeSvg(svgEl);
 	const blob = new Blob([xml], { type: "image/svg+xml;charset=utf-8" });
 	triggerDownload(blob, filename);
+	return Promise.resolve();
 }
 
 /**
