@@ -14,6 +14,12 @@ A chess study plugin for [Obsidian](https://obsidian.md): embed positions, study
 - 7 piece styles to choose from — classic, modern, retro, and more (see [Piece sets](#piece-sets))
 - Optional **Opening Explorer** panel showing win/draw/loss percentages for every candidate next move (powered by [Lichess](https://lichess.org), opt-in)
 
+## Privacy
+
+This plugin **does not read or write your system clipboard**. Insert commands open a modal so you can paste FEN, PGN, or a Lichess URL yourself. Board export offers **Save as PNG/SVG** downloads and a **Copy as SVG** modal where you select the markup and copy with your own shortcut.
+
+Optional features fetch data only when you use them: **Lichess game import** (`lichess:` blocks) and the **Opening Explorer** call the public [Lichess API](https://lichess.org/api). **Stockfish** analysis runs entirely offline in a Web Worker bundled with the plugin — no network calls.
+
 ## Contents
 
 - [Quick start](#quick-start)
@@ -29,6 +35,7 @@ A chess study plugin for [Obsidian](https://obsidian.md): embed positions, study
 - [Opening Explorer (win / draw / loss bars)](#opening-explorer-win--draw--loss-bars)
 - [Block options reference](#block-options-reference) — every key you can put in a `chess` block
 - [Settings](#settings)
+- [Privacy](#privacy)
 - [Development](#development)
 - [Credits](#credits)
 
@@ -290,9 +297,9 @@ Set the global default in **Settings → Community plugins → Caissa → Piece 
 - **Insert chess opening from library** — fuzzy-search modal for openings and variations.
 - **Insert chess endgame from library** — fuzzy-search the bundled endgame techniques.
 - **Insert chess world championship game** — two-step picker (match → game) over the bundled WCC corpus.
-- **Insert chess board from clipboard fen** — reads a FEN string from the clipboard and seeds a block.
-- **Insert chess game from clipboard pgn** — reads PGN text from the clipboard and drops it into a `chess` block.
-- **Insert chess game from lichess link** — reads a Lichess game URL or ID from the clipboard and inserts a `lichess: <id>` block.
+- **Insert chess board from FEN** — modal to paste a FEN string into a new block.
+- **Insert chess game from PGN** — modal to paste PGN text into a new block.
+- **Insert chess game from Lichess link** — modal to paste a Lichess game URL or ID.
 - **Start openings quiz** — opens a modal that endlessly serves up positions from the bundled opening repertoire and asks for the next book move. Move spelling variants (`Nf3` vs `Ngf3`) are normalized via chess.js so anything legal counts. Tracks correct/total and a streak per session.
 
 Or, drop a blank `chess` block (the **Insert chess board** command) and use the inline picker — a category dropdown lets you switch between Openings, Endgames, and World Championship right inside the rendered block, without typing slugs.
@@ -301,12 +308,11 @@ Or, drop a blank `chess` block (the **Insert chess board** command) and use the 
 
 Right-click any rendered board (long-press on touch) for a context menu with:
 
-- **Copy as image** — places a PNG on the system clipboard, ready to paste into Discord, Twitter, Obsidian notes, etc.
-- **Copy as SVG** — places the SVG markup on the clipboard.
+- **Copy as SVG** — opens a modal with the SVG markup to select and copy yourself.
 - **Save as PNG** — downloads a `caissa-board-<position>.png` file at 2× resolution (720×720 by default).
 - **Save as SVG** — downloads a `caissa-board-<position>.svg` file.
 
-Exports always reflect the *current* position on screen (after stepping moves or flipping), and use whichever piece set / colors / annotations you've configured for the block — what you see is what you copy.
+Exports always reflect the *current* position on screen (after stepping moves or flipping), and use whichever piece set / colors / annotations you've configured for the block — what you see is what you export.
 
 ## Captured pieces and material balance
 
@@ -550,7 +556,7 @@ To refresh the bundled SVGs from upstream, run `node scripts/fetch-piece-sets.mj
 
 ## Release
 
-Attach `main.js`, `manifest.json`, and `styles.css` as individual assets to a GitHub release whose tag exactly matches the `version` in `manifest.json` (no leading `v`).
+Push a tag matching `manifest.json` `version` (no leading `v`, e.g. `1.0.3`). The [release workflow](.github/workflows/release.yml) builds `main.js`, attests `main.js` and `styles.css`, and publishes a GitHub release with `main.js`, `manifest.json`, and `styles.css`.
 
 ## Support
 

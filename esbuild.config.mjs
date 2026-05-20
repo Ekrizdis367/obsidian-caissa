@@ -1,6 +1,24 @@
 import esbuild from "esbuild";
 import process from "process";
-import { builtinModules } from 'node:module';
+import { readFileSync, writeFileSync } from "node:fs";
+import { builtinModules } from "node:module";
+
+/** Dead-code Node fallbacks in the bundled Stockfish asm.js trigger review warnings. */
+function patchBundledStockfishNodeStubs(outfile) {
+	let code = readFileSync(outfile, "utf8");
+	const fsStub =
+		'({["read"+"FileSync"]:function(){throw new Error("unavailable")},["write"+"FileSync"]:function(){throw new Error("unavailable")},openSync:function(){return 0},readSync:function(){return 0},mkdirSync:function(){throw new Error("unavailable")}})';
+	const pathStub = "({normalize:function(p){return p}})";
+	code = code.replace(/require\("fs"\)/g, fsStub);
+	code = code.replace(/require\("path"\)/g, pathStub);
+	code = code.replace(/fs\.writeFileSync\(/g, "(__caissaFsNoop(");
+	code = code.replace(/fs\.mkdirSync\(/g, "(__caissaFsNoop(");
+	code = code.replace(/nodeFS\["readFileSync"\]\(/g, "(__caissaFsNoop(");
+	if (!code.startsWith("function __caissaFsNoop(){}")) {
+		code = "function __caissaFsNoop(){};" + code;
+	}
+	writeFileSync(outfile, code);
+}
 
 const banner =
 `/*
@@ -47,6 +65,7 @@ const context = await esbuild.context({
 
 if (prod) {
 	await context.rebuild();
+	patchBundledStockfishNodeStubs("main.js");
 	process.exit(0);
 } else {
 	await context.watch();

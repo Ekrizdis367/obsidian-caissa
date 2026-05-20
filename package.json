@@ -1,6 +1,6 @@
 {
 	"name": "caissa",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Caissa — chess study in your vault. Embed positions, study openings and endgames, browse World Championship games, annotate PGNs, and explore Lichess opening statistics.",
 	"main": "main.js",
 	"type": "module",

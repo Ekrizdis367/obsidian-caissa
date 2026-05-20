@@ -29,11 +29,11 @@ import {
 } from "../utils/captured-pieces";
 import { renderCapturedTray } from "./captured-tray";
 import {
-	copyBoardAsPng,
-	copyBoardAsSvg,
 	downloadBoardAsPng,
 	downloadBoardAsSvg,
+	serializeBoardSvg,
 } from "../utils/export-board";
+import { BoardSvgExportModal } from "./board-svg-export-modal";
 import {
 	createAnalysisController,
 	type AnalysisController,
@@ -564,7 +564,11 @@ function mountResult(
 		onFlip: flip,
 	});
 
-	bindBoardExportMenu(boardHost, () => result.steps[state.index]?.fen);
+	bindBoardExportMenu(
+		app,
+		boardHost,
+		() => result.steps[state.index]?.fen
+	);
 
 	if (evalGraphHost && result.steps.length > 1) {
 		evalGraphController = createEvalGraphController(evalGraphHost, {
@@ -821,8 +825,7 @@ function isEditableTarget(el: HTMLElement): boolean {
 /**
  * Right-click (or long-press on touch) on the board to open an export menu:
  *
- *   - Copy as image (PNG to clipboard)
- *   - Copy as SVG  (XML text to clipboard)
+ *   - Copy as SVG  (modal with markup to copy manually)
  *   - Save as PNG  (download)
  *   - Save as SVG  (download)
  *
@@ -831,6 +834,7 @@ function isEditableTarget(el: HTMLElement): boolean {
  * when the block first rendered.
  */
 function bindBoardExportMenu(
+	app: App,
 	boardHost: HTMLElement,
 	getCurrentFen: () => string | undefined
 ): void {
@@ -844,31 +848,13 @@ function bindBoardExportMenu(
 		const menu = new Menu();
 		menu.addItem((item) =>
 			item
-				.setTitle("Copy as image")
-				.setIcon("clipboard-copy")
-				.onClick(async () => {
-					try {
-						await copyBoardAsPng(svg as SVGElement);
-						new Notice("Board copied as PNG");
-					} catch (err) {
-						new Notice(`Copy failed: ${(err as Error).message}`);
-					}
+				.setTitle("Copy vector markup")
+				.setIcon("code")
+				.onClick(() => {
+					const xml = serializeBoardSvg(svg as SVGElement);
+					new BoardSvgExportModal(app, xml).open();
 				})
 		);
-		menu.addItem((item) =>
-			item
-				.setTitle("Copy as SVG")
-				.setIcon("clipboard-copy")
-				.onClick(async () => {
-					try {
-						await copyBoardAsSvg(svg as SVGElement);
-						new Notice("Board SVG copied to clipboard");
-					} catch (err) {
-						new Notice(`Copy failed: ${(err as Error).message}`);
-					}
-				})
-		);
-		menu.addSeparator();
 		menu.addItem((item) =>
 			item
 				.setTitle("Save as PNG")

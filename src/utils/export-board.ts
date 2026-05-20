@@ -1,6 +1,6 @@
 /**
- * Export a rendered board SVG as raster (PNG) or vector (SVG) image, either
- * to the system clipboard or as a downloaded file.
+ * Export a rendered board SVG as raster (PNG) or vector (SVG) image as a
+ * downloaded file. SVG markup can be shown in a modal for manual copying.
  *
  * The board renderer outputs a self-contained SVG (inline gradients, no
  * external <image>/<use> refs), which is what makes the canvas-rasterize
@@ -16,17 +16,8 @@ export interface ExportOptions {
 	background?: string;
 }
 
-export async function copyBoardAsPng(
-	svgEl: SVGElement,
-	opts: ExportOptions = {}
-): Promise<void> {
-	const blob = await rasterizeSvg(svgEl, opts);
-	await writeBlobToClipboard(blob, "image/png");
-}
-
-export async function copyBoardAsSvg(svgEl: SVGElement): Promise<void> {
-	const xml = serializeSvg(svgEl);
-	await navigator.clipboard.writeText(xml);
+export function serializeBoardSvg(svgEl: SVGElement): string {
+	return serializeSvg(svgEl);
 }
 
 export async function downloadBoardAsPng(
@@ -126,19 +117,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 		img.onerror = () => reject(new Error("Could not load SVG into image"));
 		img.src = src;
 	});
-}
-
-async function writeBlobToClipboard(
-	blob: Blob,
-	mimeType: string
-): Promise<void> {
-	if (typeof ClipboardItem === "undefined") {
-		throw new Error(
-			"Clipboard image API not available in this environment"
-		);
-	}
-	const item = new ClipboardItem({ [mimeType]: blob });
-	await navigator.clipboard.write([item]);
 }
 
 function triggerDownload(blob: Blob, filename: string): void {

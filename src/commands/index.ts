@@ -4,6 +4,7 @@ import { OpeningPickerModal } from "../ui/opening-picker";
 import { EndgamePickerModal } from "../ui/endgame-picker";
 import { WccMatchPickerModal } from "../ui/wcc-picker";
 import { OpeningsQuizModal } from "../ui/openings-quiz";
+import { PasteTextModal } from "../ui/paste-text-modal";
 import { parseLichessId } from "../chess/lichess-games";
 
 /**
@@ -80,22 +81,27 @@ export function registerCommands(plugin: CaissaPlugin): void {
 
 	plugin.addCommand({
 		id: "insert-chess-from-fen",
-		name: "Insert chess board from clipboard fen",
+		name: "Insert chess board from fen",
 		editorCallback: (editor: Editor) => {
-			const clip = (navigator.clipboard as Clipboard | undefined)
-				?.readText
-				? navigator.clipboard.readText().catch(() => "")
-				: Promise.resolve("");
-			void clip.then((text) => {
-				const fen = looksLikeFen(text) ? text.trim() : "";
-				const lines = ["```chess"];
-				lines.push(`fen: ${fen || "<paste FEN here>"}`);
-				lines.push("```", "");
-				insertSnippet(editor, lines.join("\n"));
-				if (!fen) {
-					new Notice("Replace <paste FEN here> with a real FEN string.");
+			new PasteTextModal(
+				plugin.app,
+				{
+					title: "Insert board from fen",
+					description:
+						"Paste a FEN string below. The block is inserted when you confirm.",
+					placeholder: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+				},
+				(text) => {
+					const fen = looksLikeFen(text) ? text.trim() : "";
+					const lines = ["```chess"];
+					lines.push(`fen: ${fen || "<paste FEN here>"}`);
+					lines.push("```", "");
+					insertSnippet(editor, lines.join("\n"));
+					if (!fen) {
+						new Notice("Replace <paste FEN here> with a real FEN string.");
+					}
 				}
-			});
+			).open();
 		},
 	});
 
@@ -103,22 +109,27 @@ export function registerCommands(plugin: CaissaPlugin): void {
 		id: "insert-chess-from-lichess",
 		name: "Insert chess game from lichess link",
 		editorCallback: (editor: Editor) => {
-			const clip = (navigator.clipboard as Clipboard | undefined)
-				?.readText
-				? navigator.clipboard.readText().catch(() => "")
-				: Promise.resolve("");
-			void clip.then((text) => {
-				const id = parseLichessId(text ?? "");
-				const lines = ["```chess"];
-				lines.push(`lichess: ${id ?? "<paste lichess game url here>"}`);
-				lines.push("```", "");
-				insertSnippet(editor, lines.join("\n"));
-				if (!id) {
-					new Notice(
-						"Replace <paste lichess game url here> with a real Lichess game URL or ID."
-					);
+			new PasteTextModal(
+				plugin.app,
+				{
+					title: "Insert game from lichess",
+					description:
+						"Paste a Lichess game URL or game ID below.",
+					placeholder: "https://lichess.org/abcdefgh",
+				},
+				(text) => {
+					const id = parseLichessId(text ?? "");
+					const lines = ["```chess"];
+					lines.push(`lichess: ${id ?? "<paste lichess game url here>"}`);
+					lines.push("```", "");
+					insertSnippet(editor, lines.join("\n"));
+					if (!id) {
+						new Notice(
+							"Replace <paste lichess game url here> with a real Lichess game URL or ID."
+						);
+					}
 				}
-			});
+			).open();
 		},
 	});
 
@@ -132,28 +143,34 @@ export function registerCommands(plugin: CaissaPlugin): void {
 
 	plugin.addCommand({
 		id: "insert-chess-from-pgn",
-		name: "Insert chess game from clipboard pgn",
+		name: "Insert chess game from pgn",
 		editorCallback: (editor: Editor) => {
-			const clip = (navigator.clipboard as Clipboard | undefined)
-				?.readText
-				? navigator.clipboard.readText().catch(() => "")
-				: Promise.resolve("");
-			void clip.then((text) => {
-				const pgn = (text ?? "").trim();
-				const lines = ["```chess"];
-				if (pgn) {
-					lines.push(pgn);
-				} else {
-					lines.push("<paste PGN here>");
+			new PasteTextModal(
+				plugin.app,
+				{
+					title: "Insert game from pgn",
+					description:
+						"Paste PGN text (headers and/or moves) below.",
+					placeholder: "[Event \"?\"]\n\n1. e4 e5 2. Nf3 Nc6",
+					rows: 10,
+				},
+				(text) => {
+					const pgn = (text ?? "").trim();
+					const lines = ["```chess"];
+					if (pgn) {
+						lines.push(pgn);
+					} else {
+						lines.push("<paste PGN here>");
+					}
+					lines.push("```", "");
+					insertSnippet(editor, lines.join("\n"));
+					if (!pgn) {
+						new Notice(
+							"Replace <paste PGN here> with PGN text (headers and/or moves)."
+						);
+					}
 				}
-				lines.push("```", "");
-				insertSnippet(editor, lines.join("\n"));
-				if (!pgn) {
-					new Notice(
-						"Replace <paste PGN here> with PGN text (headers and/or moves)."
-					);
-				}
-			});
+			).open();
 		},
 	});
 }

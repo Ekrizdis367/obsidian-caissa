@@ -1,0 +1,50 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "*.*.*"
+
+permissions:
+    contents: write
+    id-token: write
+    attestations: write
+    artifact-metadata: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Verify tag matches manifest version
+              run: |
+                  VERSION=$(node -p "JSON.parse(require('fs').readFileSync('manifest.json','utf8')).version")
+                  if [ "${GITHUB_REF_NAME}" != "$VERSION" ]; then
+                    echo "Tag ${GITHUB_REF_NAME} does not match manifest.json version ${VERSION}"
+                    exit 1
+                  fi
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - run: npm ci
+            - run: npm run build
+
+            - name: Generate artifact attestation
+              uses: actions/attest@v4
+              with:
+                  subject-path: |
+                      main.js
+                      styles.css
+
+            - name: Create GitHub release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  gh release create "${GITHUB_REF_NAME}" \
+                    --title="${GITHUB_REF_NAME}" \
+                    --generate-notes \
+                    main.js manifest.json styles.css
